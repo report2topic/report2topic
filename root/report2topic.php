@@ -23,6 +23,9 @@ $user->session_begin();
 $auth->acl($user->data);
 $user->setup('mcp');
 
+// Load report2topic++
+$r2t_core = report2topic_core::getInstance();
+
 $forum_id		= request_var('f', 0);
 $post_id		= request_var('p', 0);
 $pm_id			= request_var('pm', 0);
@@ -207,6 +210,9 @@ if ($submit && $reason_id)
 		$lang_success = $user->lang['PM_REPORTED_SUCCESS'];
 	}
 
+	// Submit the post
+	$r2t_core->submit_report_post($pm_id, $post_id);
+
 	meta_refresh(3, $redirect_url);
 
 	$message = $lang_success . '<br /><br />' . sprintf($lang_return, '<a href="' . $redirect_url . '">', '</a>');
@@ -221,7 +227,7 @@ $page_title = ($pm_id) ? $user->lang['REPORT_MESSAGE'] : $user->lang['REPORT_POS
 $template->assign_vars(array(
 	'S_REPORT_POST'		=> ($pm_id) ? false : true,
 	'REPORT_TEXT'		=> $report_text,
-	'S_REPORT_ACTION'	=> append_sid("{$phpbb_root_path}report.$phpEx", 'f=' . $forum_id . '&amp;p=' . $post_id . '&amp;pm=' . $pm_id),
+	'S_REPORT_ACTION'	=> append_sid(PHPBB_ROOT_PATH . 'report2topic.' . PHP_EXT, array('f' => $forum_id, 'p' => $post_id, 'pm' => $pm_id)),
 
 	'S_NOTIFY'			=> $user_notify,
 	'S_CAN_NOTIFY'		=> ($user->data['is_registered']) ? true : false)
