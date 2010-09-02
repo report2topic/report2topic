@@ -53,6 +53,12 @@ abstract class hook_report2topic
 			require("{$phpbb_root_path}includes/mods/report2topic++/report2topic_core.{$phpEx}");
 		}
 		self::$r2t_core = report2topic_core::getInstance();
+
+		// Load the MODs ACP language file
+		if (defined('ADMIN_START'))
+		{
+			self::$r2t_core->user->add_lang('mods/report2topic++/report2topic_acp');
+		}
 	}
 
 	/**
