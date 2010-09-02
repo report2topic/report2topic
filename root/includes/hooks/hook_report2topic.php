@@ -24,6 +24,11 @@ if (!defined('IN_PHPBB'))
 abstract class hook_report2topic
 {
 	/**
+	 * @var report2topic_core Instance of the report2topic core
+	 */
+	static private $r2t_core = null;
+
+	/**
 	 * Register all hooks
 	 * @param	phpbb_hook	$phpbb_hook	The phpBB hook object
 	 * @return	void
@@ -41,7 +46,13 @@ abstract class hook_report2topic
 	 */
 	static public function setup(phpbb_hook $phpbb_hook)
 	{
-
+		// Load the core
+		if (!class_exists('report2topic_core'))
+		{
+			global $phpbb_root_path, $phpEx;
+			require("{$phpbb_root_path}includes/mods/report2topic++/report2topic_core.{$phpEx}");
+		}
+		self::$r2t_core = report2topic_core::getInstance();
 	}
 
 	/**
