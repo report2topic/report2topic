@@ -20,10 +20,18 @@ if (!defined('IN_PHPBB'))
 /**
 * @package module_install
 */
-class acp_report2topic
+class acp_report2topic_info
 {
 	function module()
 	{
+		return array(
+			'filename'	=> 'acp_report2topic',
+			'title'		=> 'ACP_REPORT2TOPIC',
+			'version'	=> '1.0.0',
+			'modes'		=> array(
+				'config'	=> array('title' => 'ACP_REPORT2TOPIC_CONFIG', 'auth' => '', 'cat' => array('ACP_REPORT2TOPIC')),
+			),
+		);
 	}
 
 	function install()
