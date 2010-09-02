@@ -60,7 +60,7 @@ class report2topic_core
 //)
 	private $post_template = 'A new report has been made by %1$s, the report details are:.
 
-[b]Reported topic[/b]: <a href="%2$s">%3$s</a>
+[b]The report[/b]: <a href="%2$s">%3$s</a>
 [b]Report time[/b]: %4$s
 [b]Report reason[/b]: %5$s';
 
@@ -118,19 +118,23 @@ class report2topic_core
 		$report_data = array();
 		if ($pm_id > 0)
 		{
-			$report_data	= $this->get_pm_report($pm_id);
-//			$backlink		= append_sid(PHPBB_ROOT_PATH . 'viewtopic.' . PHP_EXT, array('p' => $report_data['post_id']));
+			$report_data = $this->get_pm_report($pm_id);
+			$i_mcp = 'pm_reports';
+			$mode_mcp = 'pm_report_details';
 		}
 		else if ($post_id > 0)
 		{
-			$report_data	= $this->get_post_report($post_id);
-			$backlink		= append_sid(PHPBB_ROOT_PATH . 'viewtopic.' . PHP_EXT, array('p' => $report_data['post_id']));
+			$report_data = $this->get_post_report($post_id);
+			$i_mcp = 'reports';
+			$mode_mcp = 'report_details';
 		}
 		else
 		{
 			// No report, shouldn't happen but hey ;)
 			return;
 		}
+
+		$backlink = append_sid(PHPBB_ROOT_PATH . 'mcp.' . PHP_EXT, array('i' => $i_mcp, 'mode' => $mode_mcp, 'r' => $report_data['report_id']));
 
 		// Get the message parser
 		if (!class_exists('parse_message'))
@@ -145,10 +149,11 @@ class report2topic_core
 		}
 
 		// Prepare the post
+		$subject = (!empty($report_data['post_subject'])) ? censor_text($report_data['post_subject']) : censor_text($report_data['message_subject']);
 		$post = sprintf($this->post_template,
 						get_username_string('full', $report_data['user_id'], $report_data['username'], $report_data['user_colour']),
 						$backlink,
-						censor_text($report_data['post_subject']),
+						$subject,
 						$this->user->format_date($report_data['report_time']),
 						$report_data['reason_title']);
 
@@ -181,7 +186,7 @@ class report2topic_core
 
 			// Other Options
 			'post_edit_locked'	=> 1,        // Disallow post editing? 1 = Yes, 0 = No
-			'topic_title'		=> censor_text($report_data['post_subject']), // Subject/Title of the topic. (string)
+			'topic_title'		=> $subject, // Subject/Title of the topic. (string)
 
 			// Email Notification Settings
 			'notify_set'	=> false,        // (bool)
