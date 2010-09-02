@@ -70,18 +70,23 @@ abstract class hook_report2topic
 	static public function overrule_report(phpbb_hook $phpbb_hook)
 	{
 		global $template, $user;
-		global $phpEx;
 
-		if ($user->page['page_name'] == 'viewtopic.' . $phpEx && !empty($template->_tpldata['postrow']))
+		// Reports in viewtopic
+		if ($user->page['page_name'] == 'viewtopic.' . PHP_EXT && !empty($template->_tpldata['postrow']))
 		{
 			// Before viewtopic is displayed replace the report.php links
 			foreach ($template->_tpldata['postrow'] as $row => $data)
 			{
 				if (!empty($template->_tpldata['postrow'][$row]['U_REPORT']))
 				{
-					$template->_tpldata['postrow'][$row]['U_REPORT'] = str_replace("report.{$phpEx}", "report2topic.{$phpEx}", $template->_tpldata['postrow'][$row]['U_REPORT']);
+					$template->_tpldata['postrow'][$row]['U_REPORT'] = str_replace('report.' . PHP_EXT, 'report2topic.' . PHP_EXT, $template->_tpldata['postrow'][$row]['U_REPORT']);
 				}
 			}
+		}
+
+		if ($user->page['page_name'] == 'ucp.' . PHP_EXT && !empty($template->_tpldata['.'][0]['U_REPORT']))
+		{
+			$template->_tpldata['.'][0]['U_REPORT'] = str_replace('report.' . PHP_EXT, 'report2topic.' . PHP_EXT, $template->_tpldata['.'][0]['U_REPORT']);
 		}
 	}
 }
