@@ -16,3 +16,57 @@ if (!defined('IN_PHPBB'))
 {
 	exit;
 }
+
+/**
+ * report2topic++ hook class.
+ * This class handles all hook action required for this MOD
+ */
+abstract class hook_report2topic
+{
+	/**
+	 * Register all hooks
+	 * @param	phpbb_hook	$phpbb_hook	The phpBB hook object
+	 * @return	void
+	 */
+	static public function init(phpbb_hook $phpbb_hook)
+	{
+		$phpbb_hook->register('phpbb_user_session_handler', 'hook_report2topic::setup');
+		$phpbb_hook->register(array('template', 'display'), 'hook_report2topic::overrule_report');
+	}
+
+	/**
+	 * Setup the report2topic++ MOD, load all required stuff
+	 * @param	phpbb_hook	$phpbb_hook	The phpBB hook object
+	 * @return	void
+	 */
+	static public function setup(phpbb_hook $phpbb_hook)
+	{
+
+	}
+
+	/**
+	 * Overrule all links to phpBB's report.php, and replace them with links
+	 * to report2topic.php
+	 * @param	phpbb_hook	$phpbb_hook	The phpBB hook object
+	 * @return	void
+	 */
+	static public function overrule_report(phpbb_hook $phpbb_hook)
+	{
+		global $template, $user;
+		global $phpEx;
+
+		if ($user->page['page_name'] == 'viewtopic.' . $phpEx && !empty($template->_tpldata['postrow']))
+		{
+			// Before viewtopic is displayed replace the report.php links
+			foreach ($template->_tpldata['postrow'] as $row => $data)
+			{
+				if (!empty($template->_tpldata['postrow'][$row]['U_REPORT']))
+				{
+					$template->_tpldata['postrow'][$row]['U_REPORT'] = str_replace("report.{$phpEx}", "report2topic.{$phpEx}", $template->_tpldata['postrow'][$row]['U_REPORT']);
+				}
+			}
+		}
+	}
+}
+
+hook_report2topic::init($phpbb_hook);
