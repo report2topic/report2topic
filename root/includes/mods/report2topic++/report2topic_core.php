@@ -40,6 +40,31 @@ class report2topic_core
 	static private $instance = null;
 
 	/**
+	 * @var String Report post template
+	 * @todo Replace by a fully configurable template
+	 */
+//Array
+//(
+//    [post_subject] => Welcome to phpBB3
+//    [post_id] => 1
+//    [user_id] => 2
+//    [report_id] => 9
+//    [report_closed] => 0
+//    [report_time] => 1283461074
+//    [report_text] =>
+//    [reason_title] => warez
+//    [reason_description] => The post contains links to illegal or pirated software.
+//    [username] => Erik Frèrejean
+//    [username_clean] => erik frèrejean
+//    [user_colour] => AA0000
+//)
+	private $post_template = 'A new report has been made by %1$s, the report details are:.
+
+[b]Reported topic[/b]: <a href="%2$s">%3$s</a>
+[b]Report time[/b]: %4$s
+[b]Report reason[/b]: %5$s';
+
+	/**
 	 * Construct the main class
 	 */
 	private function __construct()
@@ -81,6 +106,142 @@ class report2topic_core
 		return self::$instance;
 	}
 
+	/**
+	 * A new report is created, create the report topic
+	 * @param	Integer	$pm_id		ID of the reported PM
+	 * @param	Integer	$post_id	ID of the reported post
+	 * @return	void
+	 */
+	public function submit_report_post($pm_id = 0, $post_id = 0)
+	{
+		// Fetch the report data
+		$report_data = array();
+		if ($pm_id > 0)
+		{
+			$report_data	= $this->get_pm_report($pm_id);
+//			$backlink		= append_sid(PHPBB_ROOT_PATH . 'viewtopic.' . PHP_EXT, array('p' => $report_data['post_id']));
+		}
+		else if ($post_id > 0)
+		{
+			$report_data	= $this->get_post_report($post_id);
+			$backlink		= append_sid(PHPBB_ROOT_PATH . 'viewtopic.' . PHP_EXT, array('p' => $report_data['post_id']));
+		}
+		else
+		{
+			// No report, shouldn't happen but hey ;)
+			return;
+		}
+
+		// Get the message parser
+		if (!class_exists('parse_message'))
+		{
+			global $phpbb_root_path, $phpEx;	//	<!-- Required otherwise the message parser whines
+			require PHPBB_ROOT_PATH . 'includes/message_parser.' . PHP_EXT;
+		}
+
+		if (!function_exists('get_username_string'))
+		{
+			require PHPBB_ROOT_PATH . 'includes/functions_content.' . PHP_EXT;
+		}
+
+		// Prepare the post
+		$post = sprintf($this->post_template,
+						get_username_string('full', $report_data['user_id'], $report_data['username'], $report_data['user_colour']),
+						$backlink,
+						censor_text($report_data['post_subject']),
+						$this->user->format_date($report_data['report_time']),
+						$report_data['reason_title']);
+
+		// Load the message parser
+		$report_parser = new parse_message($post);
+
+		// Parse the post
+		$report_parser->parse(true, true, true);
+
+		// Set all the post data
+		$poll_data = array();
+		$post_data = array(
+			'forum_id'	=> $this->config['r2t_dest_forum'],    // The forum ID in which the post will be placed. (int)
+			'topic_id'	=> 0,    // Post a new topic or in an existing one? Set to 0 to create a new one, if not, specify your topic ID here instead.
+			'icon_id'	=> false,    // The Icon ID in which the post will be displayed with on the viewforum, set to false for icon_id. (int)
+
+			// Defining Post Options
+			'enable_bbcode'		=> true, // Enable BBcode in this post. (bool)
+			'enable_smilies'	=> true, // Enabe smilies in this post. (bool)
+			'enable_urls'       => true, // Enable self-parsing URL links in this post. (bool)
+			'enable_sig'        => true, // Enable the signature of the poster to be displayed in the post. (bool)
+
+			// Message Body
+			'message'		=> $report_parser->message,     // Your text you wish to have submitted. It should pass through generate_text_for_storage() before this. (string)
+			'message_md5'	=> md5($report_parser->message),// The md5 hash of your message
+
+			// Values from generate_text_for_storage()
+			'bbcode_bitfield'	=> $report_parser->bbcode_bitfield,    // Value created from the generate_text_for_storage() function.
+			'bbcode_uid'		=> $report_parser->bbcode_uid,     // Value created from the generate_text_for_storage() function.
+
+			// Other Options
+			'post_edit_locked'	=> 1,        // Disallow post editing? 1 = Yes, 0 = No
+			'topic_title'		=> censor_text($report_data['post_subject']), // Subject/Title of the topic. (string)
+
+			// Email Notification Settings
+			'notify_set'	=> false,        // (bool)
+			'notify'		=> false,        // (bool)
+			'post_time'		=> 0,        // Set a specific time, use 0 to let submit_post() take care of getting the proper time (int)
+			'forum_name'	=> '',       // For identifying the name of the forum in a notification email. (string)
+
+			// Indexing
+			'enable_indexing' => true,     // Allow indexing the post? (bool)
+		);
+
+		// And finally submit
+		if (!function_exists('submit_post'))
+		{
+			require PHPBB_ROOT_PATH . 'includes/functions_posting.' . PHP_EXT;
+		}
+		submit_post('post', $post_data['topic_title'], '', POST_NORMAL, $poll_data, $post_data);
+	}
+
+	/**
+	 * Get the report data of this reported PM
+	 * @param	Integer	$pm_id ID of the reported PM
+	 * @return	Array	The report data
+	 */
+	private function get_pm_report($pm_id) {
+		$sql = 'SELECT pm.message_subject, r.post_id, r.user_id, r.report_id, r.report_closed, report_time, r.report_text, rr.reason_title, rr.reason_description, u.username, u.username_clean, u.user_colour
+			FROM (' . PRIVMSGS_TABLE . ' pm, ' . REPORTS_TABLE . ' r, ' . REPORTS_REASONS_TABLE . ' rr, ' . USERS_TABLE . " u)
+			WHERE r.pm_id = {$pm_id}
+				AND rr.reason_id = r.reason_id
+				AND r.user_id = u.user_id
+				AND r.post_id = 0
+				AND pm.msg_id = r.pm_id
+			ORDER BY report_closed ASC";
+		$result = $this->db->sql_query_limit($sql, 1);
+		$report = $this->db->sql_fetchrow($result);
+		$this->db->sql_freeresult($result);
+
+		return $report;
+	}
+
+	/**
+	 * Get the report data of this reported post
+	 * @param	Integer	$post_id	ID of the reported post
+	 * @return	Array	The report data
+	 */
+	private function get_post_report($post_id) {
+		$sql = 'SELECT p.post_subject, r.post_id, r.user_id, r.report_id, r.report_closed, report_time, r.report_text, rr.reason_title, rr.reason_description, u.username, u.username_clean, u.user_colour
+			FROM (' . POSTS_TABLE . ' p, ' . REPORTS_TABLE . ' r, ' . REPORTS_REASONS_TABLE . ' rr, ' . USERS_TABLE . " u)
+			WHERE r.post_id = {$post_id}
+				AND rr.reason_id = r.reason_id
+				AND r.user_id = u.user_id
+				AND r.pm_id = 0
+				AND p.post_id = r.post_id
+			ORDER BY report_closed ASC";
+		$result = $this->db->sql_query_limit($sql, 1);
+		$report = $this->db->sql_fetchrow($result);
+		$this->db->sql_freeresult($result);
+
+		return $report;
+	}
 
 
 	//-- Magic methods
