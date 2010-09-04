@@ -54,7 +54,9 @@ abstract class hook_report2topic
 		}
 		self::$r2t_core = report2topic_core::getInstance();
 
-		// Load the MODs ACP language file
+		// Load the MODs ACP language files
+		self::$r2t_core->user->add_lang('mods/report2topic++/report2topic_common');
+
 		if (defined('ADMIN_START'))
 		{
 			self::$r2t_core->user->add_lang('mods/report2topic++/report2topic_acp');

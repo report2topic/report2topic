@@ -26,6 +26,14 @@
 	    <dt><label for="report2topic_post_forum">{L_R2T_DEST_FORUM}:</label><br /><span>{L_R2T_DEST_FORUM_EXPLAIN}</span></dt>
 	    <dd><label><input type="text" id="report2topic_post_forum" name="report2topic_post_forum" value="{S_DEST_FORUM}" /></label></dd>
 	</dl>
+	<dl>
+	    <dt><label for="report2topic_pm_template">{L_R2T_PM_TEMPLATE}:</label><br /><span>{L_R2T_PM_TEMPLATE_EXPLAIN}</span></dt>
+	    <dd><label><textarea id="report2topic_pm_template" name="report2topic_pm_template" cols="60" rows="5">{S_PM_TEMPLATE}</textarea></label></dd>
+	</dl>
+	<dl>
+	    <dt><label for="report2topic_post_template">{L_R2T_POST_TEMPLATE}:</label><br /><span>{L_R2T_POST_TEMPLATE_EXPLAIN}</span></dt>
+	    <dd><label><textarea id="report2topic_post_template" name="report2topic_post_template" cols="60" rows="5">{S_POST_TEMPLATE}</textarea></label></dd>
+	</dl>
     </fieldset>
 
     <fieldset class="submit-buttons">
@@ -33,6 +41,29 @@
 	<input class="button2" type="reset" id="reset" name="reset" value="{L_RESET}" />
 	{S_FORM_TOKEN}
     </fieldset>
+
+    <table cellspacing="1" id="down">
+	<thead>
+	<tr>
+	    <th colspan="2">{L_TOKENS}</th>
+	</tr>
+	<tr>
+	    <td class="row3" colspan="2">{L_TOKENS_EXPLAIN}</td>
+	</tr>
+	<tr>
+	    <th>{L_TOKEN}</th>
+	    <th>{L_TOKEN_DEFINITION}</th>
+	</tr>
+	</thead>
+	<tbody>
+	<!-- BEGIN token -->
+	    <tr valign="top">
+		<td class="row1">{token.TOKEN}</td>
+		<td class="row2">{token.EXPLAIN}</td>
+	    </tr>
+	<!-- END token -->
+	</tbody>
+	</table>
 </form>
 
 <!-- INCLUDE overall_footer.html -->

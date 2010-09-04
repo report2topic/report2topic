@@ -39,5 +39,12 @@ if (empty($lang) || !is_array($lang))
 //
 
 $lang = array_merge($lang, array(
-
+	'r2t_tokens'	=> array(
+		'REPORTER'		=> 'Link to the profile of the reporter.',
+		'REPORT_LINK'	=> 'Link to the report page in the MCP.',
+		'REPORT_POST'	=> 'Link to the reported post. <em>Not available in PM reports!</em>',
+		'REPORT_REASON'	=> 'Reason of the report.',
+		'REPORT_TEXT'	=> 'Description submitted by the user in the report.',
+		'REPORT_TIME'	=> 'Time of the report.',
+	),
 ));

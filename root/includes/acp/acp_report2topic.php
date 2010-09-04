@@ -76,8 +76,12 @@ class acp_report2topic
 		// Submit
 		if ($this->submit)
 		{
+			// Get teh vars
+			$df		= request_var('report2topic_post_forum', 0);
+			$pmt	= utf8_normalize_nfc(request_var('report2topic_pm_template', '', true));
+			$pt		= utf8_normalize_nfc(request_var('report2topic_post_template', '', true));
+
 			// Get the dest forum
-			$df	= request_var('report2topic_post_forum', 0);
 			$sql = 'SELECT forum_id
 				FROM ' . FORUMS_TABLE . '
 				WHERE forum_id = ' . (int) $df;
@@ -85,19 +89,35 @@ class acp_report2topic
 			$fid	= $this->core->db->sql_fetchfield('forum_id', false, $result);
 			$this->core->db->sql_freeresult($result);
 
+			// The forum exists save
 			if ($fid !== false)
 			{
 				set_config('r2t_dest_forum', $fid);
 			}
 
-			trigger_error($this->core->user->lang('ACP_REPORT2TOPIC_CONFIG_SUCCESS') . '<br />' . adm_back_link($this->u_action));
+			// Save the templates
+			set_config('r2t_pm_template', $pmt);
+			set_config('r2t_post_template', $pt);
+
+			trigger_error($this->core->user->lang('ACP_REPORT2TOPIC_CONFIG_SUCCESS') . adm_back_link($this->u_action));
 		}
 
 		// Output the page
 		$this->core->template->assign_vars(array(
-			'S_DEST_FORUM'	=> (isset($this->core->config['r2t_dest_forum'])) ? $this->core->config['r2t_dest_forum'] : '',
+			'S_DEST_FORUM'		=> (isset($this->core->config['r2t_dest_forum'])) ? $this->core->config['r2t_dest_forum'] : '',
+			'S_PM_TEMPLATE'		=> (isset($this->core->config['r2t_pm_template'])) ? $this->core->config['r2t_pm_template'] : '',
+			'S_POST_TEMPLATE'	=> (isset($this->core->config['r2t_post_template'])) ? $this->core->config['r2t_post_template'] : '',
 
 			'U_ACTION'	=> $this->u_action,
 		));
+
+		// Add tokens
+		foreach ($this->core->user->lang['r2t_tokens'] as $token => $explain)
+		{
+			$this->core->template->assign_block_vars('token', array(
+				'TOKEN'		=> '{' . $token . '}',
+				'EXPLAIN'	=> $explain,
+			));
+		}
 	}
 }

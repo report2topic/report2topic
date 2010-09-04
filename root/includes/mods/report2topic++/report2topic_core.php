@@ -119,14 +119,15 @@ class report2topic_core
 		if ($pm_id > 0)
 		{
 			$report_data = $this->get_pm_report($pm_id);
-			$i_mcp = 'pm_reports';
-			$mode_mcp = 'pm_report_details';
+			$template = 'r2t_pm_template';
+
+			// Can't use {REPORT_POST} here!
+			unset($this->user->lang['r2t_tokens']['REPORT_POST']);
 		}
 		else if ($post_id > 0)
 		{
 			$report_data = $this->get_post_report($post_id);
-			$i_mcp = 'reports';
-			$mode_mcp = 'report_details';
+			$template = 'r2t_post_template';
 		}
 		else
 		{
@@ -134,7 +135,14 @@ class report2topic_core
 			return;
 		}
 
-		$backlink = append_sid(PHPBB_ROOT_PATH . 'mcp.' . PHP_EXT, array('i' => $i_mcp, 'mode' => $mode_mcp, 'r' => $report_data['report_id']));
+		// Prepare token replacements
+		$replacing = $tokens = $tokens_replacement = array();
+		$this->prepare_tokens($tokens_replacement, $report_data);
+		foreach (array_keys($this->user->lang['r2t_tokens']) as $token)
+		{
+			$tokens[]		= '{' . $token . '}';
+			$replacing[]	= $tokens_replacement[$token];
+		}
 
 		// Get the message parser
 		if (!class_exists('parse_message'))
@@ -143,19 +151,9 @@ class report2topic_core
 			require PHPBB_ROOT_PATH . 'includes/message_parser.' . PHP_EXT;
 		}
 
-		if (!function_exists('get_username_string'))
-		{
-			require PHPBB_ROOT_PATH . 'includes/functions_content.' . PHP_EXT;
-		}
-
 		// Prepare the post
-		$subject = (!empty($report_data['post_subject'])) ? censor_text($report_data['post_subject']) : censor_text($report_data['message_subject']);
-		$post = sprintf($this->post_template,
-						get_username_string('full', $report_data['user_id'], $report_data['username'], $report_data['user_colour']),
-						$backlink,
-						$subject,
-						$this->user->format_date($report_data['report_time']),
-						$report_data['reason_title']);
+		$subject = ($post_id > 0) ? 'Post report: ' . censor_text($report_data['post_subject']) : 'PM report: ' . censor_text($report_data['message_subject']);
+		$post = str_replace($tokens, $replacing, $this->config[$template]);
 
 		// Load the message parser
 		$report_parser = new parse_message($post);
@@ -212,7 +210,7 @@ class report2topic_core
 	 * @return	Array	The report data
 	 */
 	private function get_pm_report($pm_id) {
-		$sql = 'SELECT pm.message_subject, r.post_id, r.user_id, r.report_id, r.report_closed, report_time, r.report_text, rr.reason_title, rr.reason_description, u.username, u.username_clean, u.user_colour
+		$sql = 'SELECT pm.message_subject, r.post_id, r.user_id, r.report_id, r.report_closed, r.report_time, r.report_text, rr.reason_title, rr.reason_description, u.username, u.username_clean, u.user_colour
 			FROM (' . PRIVMSGS_TABLE . ' pm, ' . REPORTS_TABLE . ' r, ' . REPORTS_REASONS_TABLE . ' rr, ' . USERS_TABLE . " u)
 			WHERE r.pm_id = {$pm_id}
 				AND rr.reason_id = r.reason_id
@@ -233,7 +231,7 @@ class report2topic_core
 	 * @return	Array	The report data
 	 */
 	private function get_post_report($post_id) {
-		$sql = 'SELECT p.post_subject, r.post_id, r.user_id, r.report_id, r.report_closed, report_time, r.report_text, rr.reason_title, rr.reason_description, u.username, u.username_clean, u.user_colour
+		$sql = 'SELECT p.post_subject, r.post_id, r.user_id, r.report_id, r.report_closed, r.report_time, r.report_text, rr.reason_title, rr.reason_description, u.username, u.username_clean, u.user_colour
 			FROM (' . POSTS_TABLE . ' p, ' . REPORTS_TABLE . ' r, ' . REPORTS_REASONS_TABLE . ' rr, ' . USERS_TABLE . " u)
 			WHERE r.post_id = {$post_id}
 				AND rr.reason_id = r.reason_id
@@ -246,6 +244,50 @@ class report2topic_core
 		$this->db->sql_freeresult($result);
 
 		return $report;
+	}
+
+	/**
+	 * Create an array containing all data that *might* be used in the report
+	 * post. The tokens will be replaced later on
+	 * @param	Array	$tokens	An array that will be filled with the token replacements for this report
+	 * @param	Array	$report	An array containing the report data
+	 * @return	void
+	 */
+	public function prepare_tokens(&$tokens, $report)
+	{
+		if (!function_exists('get_username_string'))
+		{
+			require PHPBB_ROOT_PATH . 'includes/functions_content.' . PHP_EXT;
+		}
+
+		// Build the data
+		$reporter		= get_username_string('full', $report['user_id'], $report['username'], $report['user_colour']);
+		$report_reason	= censor_text($report['reason_title']);
+		$report_text	= censor_text($report['report_text']);
+		$report_time	= $this->user->format_date($report['report_time']);
+
+		$report_link_params = array(
+			'i'		=> ($report['post_id'] > 0) ? 'reports' : 'pm_reports',
+			'mode'	=> ($report['post_id'] > 0) ? 'report_details' : 'pm_report_details',
+			'r'		=> $report['report_id'],
+		);
+		$report_link = append_sid(generate_board_url() . '/mcp.' . PHP_EXT, $report_link_params);
+
+		$report_post_link_params = array(
+			'p'	=> $report['post_id'],
+			'#'	=> 'p' . $report['post_id'],
+		);
+		$report_post_link = append_sid(generate_board_url() . '/viewtopic.' . PHP_EXT, $report_post_link_params);
+
+		// Fill the array
+		$tokens = array(
+			'REPORTER'		=> $reporter,
+			'REPORT_LINK'	=> $report_link,
+			'REPORT_POST'	=> $report_post_link,
+			'REPORT_REASON'	=> $report_reason,
+			'REPORT_TEXT'	=> $report_text,
+			'REPORT_TIME'	=> $report_time,
+		);
 	}
 
 

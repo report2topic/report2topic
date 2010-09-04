@@ -46,4 +46,13 @@ $lang = array_merge($lang, array(
 
 	'R2T_DEST_FORUM'			=> 'Destination forum',
 	'R2T_DEST_FORUM_EXPLAIN'	=> 'Enter the forum ID that will be used to post reports to. <br /><strong style="color: #f00;">Note:</strong> This will be replaced with a more flexible forum based system later on!',
+	'R2T_PM_TEMPLATE'			=> 'Pm template',
+	'R2T_PM_TEMPLATE_EXPLAIN'	=> 'Here you can define how the PM report posts will be formatted. By using tokens you can specify which information will be displayed. You <em>can</em> use BBCodes in the post template.',
+	'R2T_POST_TEMPLATE'			=> 'Post template',
+	'R2T_POST_TEMPLATE_EXPLAIN'	=> 'Here you can define how the post report posts will be formatted. By using tokens you can specify which information will be displayed. You <em>can</em> use BBCodes in the post template.',
+
+	'TOKEN'				=> 'Token',
+	'TOKENS'			=> 'Tokens',
+	'TOKENS_EXPLAIN'	=> 'Tokens are placeholders for various pieces of information that can be displayed in the report post.<br /><br /><strong>Please note that only tokens listed below can be used in the report post.</strong>',
+	'TOKEN_DEFINITION'	=> 'What will it be replaced with?',
 ));
