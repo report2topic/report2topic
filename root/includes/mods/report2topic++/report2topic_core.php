@@ -89,11 +89,9 @@ class report2topic_core
 	 */
 	public function submit_report_post($pm_id = 0, $post_id = 0)
 	{
-		// Fetch the report data
-		$report_data = array();
+		// Some mode specific data
 		if ($pm_id > 0)
 		{
-			$report_data = $this->get_pm_report($pm_id);
 			$subject = 'r2t_pm_title';
 			$template = 'r2t_pm_template';
 
@@ -102,7 +100,6 @@ class report2topic_core
 		}
 		else if ($post_id > 0)
 		{
-			$report_data = $this->get_post_report($post_id);
 			$subject = 'r2t_post_title';
 			$template = 'r2t_post_template';
 		}
@@ -111,6 +108,9 @@ class report2topic_core
 			// No report, shouldn't happen but hey ;)
 			return;
 		}
+
+		// Fetch the report data
+		$report_data = $this->get_report_data($pm_id, $post_id);
 
 		// Prepare token replacements
 		$replacing = $tokens = $tokens_replacement = array();
@@ -182,42 +182,50 @@ class report2topic_core
 	}
 
 	/**
-	 * Get the report data of this reported PM
-	 * @param	Integer	$pm_id ID of the reported PM
-	 * @return	Array	The report data
-	 */
-	private function get_pm_report($pm_id) {
-		$sql = 'SELECT pm.message_subject, r.post_id, r.user_id, r.report_id, r.report_closed, r.report_time, r.report_text, rr.reason_title, rr.reason_description, u.username, u.username_clean, u.user_colour
-			FROM (' . PRIVMSGS_TABLE . ' pm, ' . REPORTS_TABLE . ' r, ' . REPORTS_REASONS_TABLE . ' rr, ' . USERS_TABLE . " u)
-			WHERE r.pm_id = {$pm_id}
-				AND rr.reason_id = r.reason_id
-				AND r.user_id = u.user_id
-				AND r.post_id = 0
-				AND pm.msg_id = r.pm_id
-			ORDER BY report_closed ASC";
-		$result = $this->db->sql_query_limit($sql, 1);
-		$report = $this->db->sql_fetchrow($result);
-		$this->db->sql_freeresult($result);
-
-		return $report;
-	}
-
-	/**
-	 * Get the report data of this reported post
+	 * Get the report data of the reported post or PM
+	 * @param	Integer	$pm_id		ID of the reported PM
 	 * @param	Integer	$post_id	ID of the reported post
 	 * @return	Array	The report data
 	 */
-	private function get_post_report($post_id) {
-		$sql = 'SELECT p.post_subject, r.post_id, r.user_id, r.report_id, r.report_closed, r.report_time, r.report_text, rr.reason_title, rr.reason_description, u.username, u.username_clean, u.user_colour
-			FROM (' . POSTS_TABLE . ' p, ' . REPORTS_TABLE . ' r, ' . REPORTS_REASONS_TABLE . ' rr, ' . USERS_TABLE . " u)
-			WHERE r.post_id = {$post_id}
+	private function get_report_data($pm_id = 0, $post_id = 0)
+	{
+		// The global query
+		$sql_ary = array(
+			'SELECT'	=> 'r.user_id, r.report_id, r.report_closed, r.report_time, r.report_text, rr.reason_title, rr.reason_description, u.username, u.username_clean, u.user_colour',
+			'FROM'		=> array(
+				REPORTS_TABLE			=> 'r',
+				REPORTS_REASONS_TABLE	=> 'rr',
+				USERS_TABLE				=> 'u',
+			),
+			'ORDER_BY'	=> 'report_closed ASC',
+		);
+
+		// Type specific
+		if ($post_id > 0)
+		{
+			$sql_ary['SELECT']	.= ', p.post_subject, r.post_id';
+			$sql_ary['FROM']	+= array(POSTS_TABLE => 'p');
+			$sql_ary['WHERE']	= "r.post_id = {$post_id}
 				AND rr.reason_id = r.reason_id
 				AND r.user_id = u.user_id
 				AND r.pm_id = 0
-				AND p.post_id = r.post_id
-			ORDER BY report_closed ASC";
-		$result = $this->db->sql_query_limit($sql, 1);
-		$report = $this->db->sql_fetchrow($result);
+				AND p.post_id = r.post_id";
+		}
+		else
+		{
+			$sql_ary['SELECT']	.= ', pm.message_subject, r.pm_id';
+			$sql_ary['FROM']	+= array(PRIVMSGS_TABLE => 'pm');
+			$sql_ary['WHERE']	= "r.pm_id = {$pm_id}
+				AND rr.reason_id = r.reason_id
+				AND r.user_id = u.user_id
+				AND r.post_id = 0
+				AND pm.msg_id = r.pm_id";
+		}
+
+		// Build and run the query
+		$sql	= $this->db->sql_build_query('SELECT', $sql_ary);
+		$result	= $this->db->sql_query($sql);
+		$report	= $this->db->sql_fetchrow($result);
 		$this->db->sql_freeresult($result);
 
 		return $report;
