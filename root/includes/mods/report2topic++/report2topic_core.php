@@ -265,6 +265,7 @@ class report2topic_core
 		$report_reason	= censor_text($report['reason_title']);
 		$report_text	= censor_text($report['report_text']);
 		$report_time	= $this->user->format_date($report['report_time']);
+		$title			= ($report['post_id'] > 0) ? censor_text($report['post_subject']) : censor_text($report['message_subject']),
 
 		$report_link_params = array(
 			'i'		=> ($report['post_id'] > 0) ? 'reports' : 'pm_reports',
@@ -287,6 +288,7 @@ class report2topic_core
 			'REPORT_REASON'	=> $report_reason,
 			'REPORT_TEXT'	=> $report_text,
 			'REPORT_TIME'	=> $report_time,
+			'TITLE'			=> $title,
 		);
 	}
 
