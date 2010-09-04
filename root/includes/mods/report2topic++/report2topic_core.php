@@ -94,6 +94,7 @@ class report2topic_core
 		if ($pm_id > 0)
 		{
 			$report_data = $this->get_pm_report($pm_id);
+			$subject = 'r2t_pm_title';
 			$template = 'r2t_pm_template';
 
 			// Can't use {REPORT_POST} here!
@@ -102,6 +103,7 @@ class report2topic_core
 		else if ($post_id > 0)
 		{
 			$report_data = $this->get_post_report($post_id);
+			$subject = 'r2t_post_title';
 			$template = 'r2t_post_template';
 		}
 		else
@@ -127,7 +129,7 @@ class report2topic_core
 		}
 
 		// Prepare the post
-		$subject = ($post_id > 0) ? 'Post report: ' . censor_text($report_data['post_subject']) : 'PM report: ' . censor_text($report_data['message_subject']);
+		$subject = censor_text(str_replace($tokens, $replacing, $this->config[$subject]));
 		$post = str_replace($tokens, $replacing, $this->config[$template]);
 
 		// Load the message parser
@@ -236,11 +238,12 @@ class report2topic_core
 		}
 
 		// Build the data
-		$reporter		= get_username_string('full', $report['user_id'], $report['username'], $report['user_colour']);
+		$reporter		= get_username_string('username', $report['user_id'], $report['username'], $report['user_colour']);
+		$reporter_full	= get_username_string('full', $report['user_id'], $report['username'], $report['user_colour']);
 		$report_reason	= censor_text($report['reason_title']);
 		$report_text	= censor_text($report['report_text']);
 		$report_time	= $this->user->format_date($report['report_time']);
-		$title			= ($report['post_id'] > 0) ? censor_text($report['post_subject']) : censor_text($report['message_subject']),
+		$title			= ($report['post_id'] > 0) ? censor_text($report['post_subject']) : censor_text($report['message_subject']);
 
 		$report_link_params = array(
 			'i'		=> ($report['post_id'] > 0) ? 'reports' : 'pm_reports',
@@ -258,6 +261,7 @@ class report2topic_core
 		// Fill the array
 		$tokens = array(
 			'REPORTER'		=> $reporter,
+			'REPORTER_FULL'	=> $reporter_full,
 			'REPORT_LINK'	=> $report_link,
 			'REPORT_POST'	=> $report_post_link,
 			'REPORT_REASON'	=> $report_reason,

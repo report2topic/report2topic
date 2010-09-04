@@ -77,9 +77,11 @@ class acp_report2topic
 		if ($this->submit)
 		{
 			// Get teh vars
-			$df		= request_var('report2topic_post_forum', 0);
-			$pmt	= utf8_normalize_nfc(request_var('report2topic_pm_template', '', true));
-			$pt		= utf8_normalize_nfc(request_var('report2topic_post_template', '', true));
+			$df	= request_var('report2topic_post_forum', 0);
+			$pm_title		= utf8_normalize_nfc(request_var('report2topic_pm_title', '', true));
+			$post_title		= utf8_normalize_nfc(request_var('report2topic_post_title', '', true));
+			$pm_template	= utf8_normalize_nfc(request_var('report2topic_pm_template', '', true));
+			$post_template	= utf8_normalize_nfc(request_var('report2topic_post_template', '', true));
 
 			// Get the dest forum
 			$sql = 'SELECT forum_id
@@ -95,9 +97,13 @@ class acp_report2topic
 				set_config('r2t_dest_forum', $fid);
 			}
 
+			// Save topic title
+			set_config('r2t_pm_title', $pm_title);
+			set_config('r2t_post_title', $post_title);
+
 			// Save the templates
-			set_config('r2t_pm_template', $pmt);
-			set_config('r2t_post_template', $pt);
+			set_config('r2t_pm_template', $pm_template);
+			set_config('r2t_post_template', $post_template);
 
 			trigger_error($this->core->user->lang('ACP_REPORT2TOPIC_CONFIG_SUCCESS') . adm_back_link($this->u_action));
 		}
@@ -106,7 +112,9 @@ class acp_report2topic
 		$this->core->template->assign_vars(array(
 			'S_DEST_FORUM'		=> (isset($this->core->config['r2t_dest_forum'])) ? $this->core->config['r2t_dest_forum'] : '',
 			'S_PM_TEMPLATE'		=> (isset($this->core->config['r2t_pm_template'])) ? $this->core->config['r2t_pm_template'] : '',
+			'S_PM_TITLE'		=> (isset($this->core->config['r2t_pm_title'])) ? $this->core->config['r2t_pm_title'] : '',
 			'S_POST_TEMPLATE'	=> (isset($this->core->config['r2t_post_template'])) ? $this->core->config['r2t_post_template'] : '',
+			'S_POST_TITLE'		=> (isset($this->core->config['r2t_post_title'])) ? $this->core->config['r2t_post_title'] : '',
 
 			'U_ACTION'	=> $this->u_action,
 		));
