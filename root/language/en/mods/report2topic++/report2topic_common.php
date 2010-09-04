@@ -46,5 +46,6 @@ $lang = array_merge($lang, array(
 		'REPORT_REASON'	=> 'Reason of the report.',
 		'REPORT_TEXT'	=> 'Description submitted by the user in the report.',
 		'REPORT_TIME'	=> 'Time of the report.',
+		'TITLE'			=> 'The subject of the reported post or PM',
 	),
 ));
