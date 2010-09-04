@@ -40,31 +40,6 @@ class report2topic_core
 	static private $instance = null;
 
 	/**
-	 * @var String Report post template
-	 * @todo Replace by a fully configurable template
-	 */
-//Array
-//(
-//    [post_subject] => Welcome to phpBB3
-//    [post_id] => 1
-//    [user_id] => 2
-//    [report_id] => 9
-//    [report_closed] => 0
-//    [report_time] => 1283461074
-//    [report_text] =>
-//    [reason_title] => warez
-//    [reason_description] => The post contains links to illegal or pirated software.
-//    [username] => Erik Frèrejean
-//    [username_clean] => erik frèrejean
-//    [user_colour] => AA0000
-//)
-	private $post_template = 'A new report has been made by %1$s, the report details are:.
-
-[b]The report[/b]: <a href="%2$s">%3$s</a>
-[b]Report time[/b]: %4$s
-[b]Report reason[/b]: %5$s';
-
-	/**
 	 * Construct the main class
 	 */
 	private function __construct()
