@@ -308,7 +308,7 @@ class report2topic_core
 			);
 			$report_post_link = append_sid(generate_board_url() . '/viewtopic.' . PHP_EXT, $report_post_link_params);
 
-			$tokens[] = array('REPORT_POST'	=> $report_post_link);
+			$tokens['REPORT_POST'] = $report_post_link;
 		}
 	}
 
