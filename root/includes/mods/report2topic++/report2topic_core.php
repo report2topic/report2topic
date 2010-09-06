@@ -99,8 +99,13 @@ class report2topic_core
 			unset($this->user->lang['r2t_tokens']['REPORT_POST']);
 
 			// Destination forum
-			// @todo customisable
 			$dest_forum = $this->config['r2t_pm_dest_forum'];
+
+			// Post options
+			$enable_bbcode	= ($this->config['r2t_pm_template_bbcode']) ? true : false;
+			$enable_smilies	= ($this->config['r2t_pm_template_smilies']) ? true : false;
+			$enable_urls	= ($this->config['r2t_pm_template_urls']) ? true : false;
+			$enable_sig		= ($this->config['r2t_pm_template_sig']) ? true : false;
 		}
 		else if ($post_id > 0)
 		{
@@ -110,6 +115,12 @@ class report2topic_core
 			// Destination forum
 			global $forum_data;
 			$dest_forum = ($forum_data['r2t_report_forum'] > 0) ? $forum_data['r2t_report_forum'] : $this->config['r2t_dest_forum'];
+
+			// Post options
+			$enable_bbcode	= ($this->config['r2t_post_template_bbcode']) ? true : false;
+			$enable_smilies	= ($this->config['r2t_post_template_smilies']) ? true : false;
+			$enable_urls	= ($this->config['r2t_post_template_urls']) ? true : false;
+			$enable_sig		= ($this->config['r2t_post_template_sig']) ? true : false;
 		}
 		else
 		{
@@ -144,7 +155,7 @@ class report2topic_core
 		$report_parser = new parse_message($post);
 
 		// Parse the post
-		$report_parser->parse(true, true, true);
+		$report_parser->parse($enable_bbcode, $enable_urls, $enable_smilies);
 
 		// Set all the post data
 		$poll_data = array();
@@ -154,10 +165,10 @@ class report2topic_core
 			'icon_id'	=> false,    // The Icon ID in which the post will be displayed with on the viewforum, set to false for icon_id. (int)
 
 			// Defining Post Options
-			'enable_bbcode'		=> true, // Enable BBcode in this post. (bool)
-			'enable_smilies'	=> true, // Enabe smilies in this post. (bool)
-			'enable_urls'       => true, // Enable self-parsing URL links in this post. (bool)
-			'enable_sig'        => true, // Enable the signature of the poster to be displayed in the post. (bool)
+			'enable_bbcode'		=> $enable_bbcode, // Enable BBcode in this post. (bool)
+			'enable_smilies'	=> $enable_smilies, // Enabe smilies in this post. (bool)
+			'enable_urls'       => $enable_urls, // Enable self-parsing URL links in this post. (bool)
+			'enable_sig'        => $enable_sig, // Enable the signature of the poster to be displayed in the post. (bool)
 
 			// Message Body
 			'message'		=> $report_parser->message,     // Your text you wish to have submitted. It should pass through generate_text_for_storage() before this. (string)

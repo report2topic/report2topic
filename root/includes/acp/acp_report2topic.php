@@ -84,6 +84,16 @@ class acp_report2topic
 			$pm_template	= utf8_normalize_nfc(request_var('report2topic_pm_template', '', true));
 			$post_template	= utf8_normalize_nfc(request_var('report2topic_post_template', '', true));
 
+			// Teh option checkboxes
+			$pm_template_bbcode		= (isset($_POST['report2topic_pm_template_parse_bbcode'])) ? true : false;;
+			$pm_template_smilies	= (isset($_POST['report2topic_pm_template_parse_bbcode'])) ? true : false;
+			$pm_template_urls		= (isset($_POST['report2topic_pm_template_parse_urls'])) ? true : false;
+			$pm_template_sig		= (isset($_POST['report2topic_pm_template_parse_sig'])) ? true : false;
+			$post_template_bbcode	= (isset($_POST['report2topic_post_template_parse_bbcode'])) ? true : false;
+			$post_template_smilies	= (isset($_POST['report2topic_post_template_parse_smilies'])) ? true : false;
+			$post_template_urls		= (isset($_POST['report2topic_post_template_parse_urls'])) ? true : false;
+			$post_template_sig		= (isset($_POST['report2topic_post_template_parse_sig'])) ? true : false;
+
 			// Validate the forum IDs
 			// If valid save the settings.
 			$sql = 'SELECT forum_id
@@ -112,6 +122,16 @@ class acp_report2topic
 			set_config('r2t_pm_template', $pm_template);
 			set_config('r2t_post_template', $post_template);
 
+			// Save all the options
+			set_config('r2t_pm_template_bbcode', $pm_template_bbcode);
+			set_config('r2t_pm_template_smilies', $pm_template_smilies);
+			set_config('r2t_pm_template_urls', $pm_template_urls);
+			set_config('r2t_pm_template_sig', $pm_template_sig);
+			set_config('r2t_post_template_bbcode', $post_template_bbcode);
+			set_config('r2t_post_template_smilies', $post_template_smilies);
+			set_config('r2t_post_template_urls', $post_template_urls);
+			set_config('r2t_post_template_sig', $post_template_sig);
+
 			trigger_error($this->core->user->lang('ACP_REPORT2TOPIC_CONFIG_SUCCESS') . adm_back_link($this->u_action));
 		}
 
@@ -125,6 +145,14 @@ class acp_report2topic
 			'S_PM_TEMPLATE'		=> (isset($this->core->config['r2t_pm_template'])) ? $this->core->config['r2t_pm_template'] : '',
 			'S_PM_TITLE'		=> (isset($this->core->config['r2t_pm_title'])) ? $this->core->config['r2t_pm_title'] : '',
 			'S_POST_TEMPLATE'	=> (isset($this->core->config['r2t_post_template'])) ? $this->core->config['r2t_post_template'] : '',
+			'S_PM_TEMPLATE_BBCODE_CHECKED'		=> (isset($this->core->config['r2t_pm_template_bbcode'])) ? $this->core->config['r2t_pm_template_bbcode'] : false,
+			'S_PM_TEMPLATE_SMILIES_CHECKED'		=> (isset($this->core->config['r2t_pm_template_smilies'])) ? $this->core->config['r2t_pm_template_smilies'] : false,
+			'S_PM_TEMPLATE_URLS_CHECKED'		=> (isset($this->core->config['r2t_pm_template_urls'])) ? $this->core->config['r2t_pm_template_urls'] : false,
+			'S_PM_TEMPLATE_SIG_CHECKED'			=> (isset($this->core->config['r2t_pm_template_sig'])) ? $this->core->config['r2t_pm_template_sig'] : false,
+			'S_POST_TEMPLATE_BBCODE_CHECKED'	=> (isset($this->core->config['r2t_post_template_bbcode'])) ? $this->core->config['r2t_post_template_bbcode'] : false,
+			'S_POST_TEMPLATE_SMILIES_CHECKED'	=> (isset($this->core->config['r2t_post_template_smilies'])) ? $this->core->config['r2t_post_template_smilies'] : false,
+			'S_POST_TEMPLATE_URLS_CHECKED'		=> (isset($this->core->config['r2t_post_template_urls'])) ? $this->core->config['r2t_post_template_urls'] : false,
+			'S_POST_TEMPLATE_SIG_CHECKED'		=> (isset($this->core->config['r2t_post_template_sig'])) ? $this->core->config['r2t_post_template_sig'] : false,
 			'S_POST_TITLE'		=> (isset($this->core->config['r2t_post_title'])) ? $this->core->config['r2t_post_title'] : '',
 
 			'U_ACTION'	=> $this->u_action,

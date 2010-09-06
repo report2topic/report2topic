@@ -25,6 +25,10 @@
 	<dl>
 	    <dt><label for="report2topic_post_template">{L_R2T_POST_TEMPLATE}:</label><br /><span>{L_R2T_POST_TEMPLATE_EXPLAIN}</span></dt>
 	    <dd><textarea id="report2topic_post_template" name="report2topic_post_template" cols="60" rows="5">{S_POST_TEMPLATE}</textarea></dd>
+	    <dd><label><input type="checkbox" class="radio" name="report2topic_post_template_parse_bbcode"<!-- IF S_POST_TEMPLATE_BBCODE_CHECKED --> checked="checked"<!-- ENDIF --> /> {L_PARSE_BBCODE}</label>
+		<label><input type="checkbox" class="radio" name="report2topic_post_template_parse_smilies"<!-- IF S_POST_TEMPLATE_SMILIES_CHECKED --> checked="checked"<!-- ENDIF --> /> {L_PARSE_SMILIES}</label>
+		<label><input type="checkbox" class="radio" name="report2topic_post_template_parse_urls"<!-- IF S_POST_TEMPLATE_URLS_CHECKED --> checked="checked"<!-- ENDIF --> /> {L_PARSE_URLS}</label>
+		<label><input type="checkbox" class="radio" name="report2topic_post_template_parse_sig"<!-- IF S_POST_TEMPLATE_SIG_CHECKED --> checked="checked"<!-- ENDIF --> /> {L_PARSE_SIG}</label></dd>
 	</dl>
 	<dl>
 	    <dt><label for="report2topic_post_title">{L_R2T_POST_TITLE}:</label><br /><span>{L_R2T_POST_TITLE_EXPLAIN}</span></dt>
@@ -46,6 +50,10 @@
 	<dl>
 	    <dt><label for="report2topic_pm_template">{L_R2T_PM_TEMPLATE}:</label><br /><span>{L_R2T_PM_TEMPLATE_EXPLAIN}</span></dt>
 	    <dd><textarea id="report2topic_pm_template" name="report2topic_pm_template" cols="60" rows="5">{S_PM_TEMPLATE}</textarea></dd>
+	    <dd><label><input type="checkbox" class="radio" name="report2topic_pm_template_parse_bbcode"<!-- IF S_PM_TEMPLATE_BBCODE_CHECKED --> checked="checked"<!-- ENDIF --> /> {L_PARSE_BBCODE}</label>
+		<label><input type="checkbox" class="radio" name="report2topic_pm_template_parse_smilies"<!-- IF S_PM_TEMPLATE_SMILIES_CHECKED --> checked="checked"<!-- ENDIF --> /> {L_PARSE_SMILIES}</label>
+		<label><input type="checkbox" class="radio" name="report2topic_pm_template_parse_urls"<!-- IF S_PM_TEMPLATE_URLS_CHECKED --> checked="checked"<!-- ENDIF --> /> {L_PARSE_URLS}</label>
+		<label><input type="checkbox" class="radio" name="report2topic_pm_template_parse_sig"<!-- IF S_PM_TEMPLATE_SIG_CHECKED --> checked="checked"<!-- ENDIF --> /> {L_PARSE_SIG}</label></dd>
 	</dl>
 	<dl>
 	    <dt><label for="report2topic_pm_forum">{L_R2T_PM_DEST_FORUM}:</label><br /><span>{L_R2T_PM_DEST_FORUM_EXPLAIN}</span></dt>
