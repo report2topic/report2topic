@@ -100,7 +100,7 @@ class report2topic_core
 
 			// Destination forum
 			// @todo customisable
-			$dest_forum = $this->config['r2t_dest_forum'];
+			$dest_forum = $this->config['r2t_pm_dest_forum'];
 		}
 		else if ($post_id > 0)
 		{
@@ -259,32 +259,36 @@ class report2topic_core
 		$report_reason	= censor_text($report['reason_title']);
 		$report_text	= censor_text($report['report_text']);
 		$report_time	= $this->user->format_date($report['report_time']);
-		$title			= ($report['post_id'] > 0) ? censor_text($report['post_subject']) : censor_text($report['message_subject']);
+		$title			= (isset($report['post_id'])) ? censor_text($report['post_subject']) : censor_text($report['message_subject']);
 
 		$report_link_params = array(
-			'i'		=> ($report['post_id'] > 0) ? 'reports' : 'pm_reports',
-			'mode'	=> ($report['post_id'] > 0) ? 'report_details' : 'pm_report_details',
+			'i'		=> (isset($report['post_id']))  ? 'reports' : 'pm_reports',
+			'mode'	=> (isset($report['post_id']))  ? 'report_details' : 'pm_report_details',
 			'r'		=> $report['report_id'],
 		);
 		$report_link = append_sid(generate_board_url() . '/mcp.' . PHP_EXT, $report_link_params);
-
-		$report_post_link_params = array(
-			'p'	=> $report['post_id'],
-			'#'	=> 'p' . $report['post_id'],
-		);
-		$report_post_link = append_sid(generate_board_url() . '/viewtopic.' . PHP_EXT, $report_post_link_params);
 
 		// Fill the array
 		$tokens = array(
 			'REPORTER'		=> $reporter,
 			'REPORTER_FULL'	=> $reporter_full,
 			'REPORT_LINK'	=> $report_link,
-			'REPORT_POST'	=> $report_post_link,
 			'REPORT_REASON'	=> $report_reason,
 			'REPORT_TEXT'	=> $report_text,
 			'REPORT_TIME'	=> $report_time,
 			'TITLE'			=> $title,
 		);
+
+		if (isset($report['post_id']))
+		{
+				$report_post_link_params = array(
+				'p'	=> $report['post_id'],
+				'#'	=> 'p' . $report['post_id'],
+			);
+			$report_post_link = append_sid(generate_board_url() . '/viewtopic.' . PHP_EXT, $report_post_link_params);
+
+			$tokens[] = array('REPORT_POST'	=> $report_post_link);
+		}
 	}
 
 
