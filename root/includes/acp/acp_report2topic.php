@@ -115,11 +115,12 @@ class acp_report2topic
 			trigger_error($this->core->user->lang('ACP_REPORT2TOPIC_CONFIG_SUCCESS') . adm_back_link($this->u_action));
 		}
 
-		$pm_dest_forum_id = (isset($this->core->config['r2t_pm_dest_forum'])) ? $this->core->config['r2t_pm_dest_forum'] : 0;
+		$dest_forum_id		= (isset($this->core->config['r2t_dest_forum'])) ? $this->core->config['r2t_dest_forum'] : 0;
+		$pm_dest_forum_id	= (isset($this->core->config['r2t_pm_dest_forum'])) ? $this->core->config['r2t_pm_dest_forum'] : 0;
 
 		// Output the page
 		$this->core->template->assign_vars(array(
-			'S_DEST_FORUM'		=> (isset($this->core->config['r2t_dest_forum'])) ? $this->core->config['r2t_dest_forum'] : '',
+			'S_DEST_OPTIONS'	=> make_forum_select($dest_forum_id, false, true, true),
 			'S_PM_DEST_OPTIONS'	=> make_forum_select($pm_dest_forum_id, false, true, true),
 			'S_PM_TEMPLATE'		=> (isset($this->core->config['r2t_pm_template'])) ? $this->core->config['r2t_pm_template'] : '',
 			'S_PM_TITLE'		=> (isset($this->core->config['r2t_pm_title'])) ? $this->core->config['r2t_pm_title'] : '',
