@@ -44,6 +44,6 @@ $lang = array_merge($lang, array(
 	'ACP_REPORT2TOPIC_CONFIG_EXPLAIN'	=> 'The main report2topic++ configuration.',
 	'ACP_REPORT2TOPIC_CONFIG_SUCCESS'	=> 'The main configuration has been updated successfully!',
 
-	'R2T_DEST_FORUM'			=> 'Destination forum',
-	'R2T_DEST_FORUM_EXPLAIN'	=> 'Enter the forum ID that will be used to post reports to. <br /><strong style="color: #f00;">Note:</strong> This will be replaced with a more flexible forum based system later on!',
+	'R2T_DEST_FORUM'			=> 'Default destination forum',
+	'R2T_DEST_FORUM_EXPLAIN'	=> 'Enter the forum ID of the forum that will be used to post the reports to. This forum will be used as the <strong>default</strong> destination. You however can select on a forum basis a different report forum.',
 ));
