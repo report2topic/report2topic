@@ -46,8 +46,10 @@ $lang = array_merge($lang, array(
 	'ACP_REPORT2TOPIC_PM_CONFIG'		=> 'PM report configuration',
 	'ACP_REPORT2TOPIC_POST_CONFIG'		=> 'Post report configuration',
 
-	'R2T_DEST_FORUM'				=> 'Destination forum',
-	'R2T_DEST_FORUM_EXPLAIN'		=> 'Enter the forum ID that will be used to post reports to. <br /><strong style="color: #f00;">Note:</strong> This will be replaced with a more flexible forum based system later on!',
+	'R2T_DEST_FORUM'				=> 'Default destination forum',
+	'R2T_DEST_FORUM_EXPLAIN'		=> 'Enter the forum ID of the forum that will be used to post the reports to. This forum will be used as the <strong>default</strong> destination. You however can select on a forum basis a different report forum.',
+	'R2T_PM_DEST_FORUM'				=> 'PM report destination forum',
+	'R2T_PM_DEST_FORUM_EXPLAIN'		=> 'Enter the forum ID of the forum that will be used to post PM reports to.',
 	'R2T_PM_TITLE'					=> 'PM report title',
 	'R2T_PM_TITLE_EXPLAIN'			=> 'Here you can define which post title is used for PM report topics. You <strong>can</strong> use tokens in the topic title.',
 	'R2T_PM_TEMPLATE'				=> 'PM template',
