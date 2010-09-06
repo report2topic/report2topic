@@ -97,11 +97,19 @@ class report2topic_core
 
 			// Can't use {REPORT_POST} here!
 			unset($this->user->lang['r2t_tokens']['REPORT_POST']);
+
+			// Destination forum
+			// @todo customisable
+			$dest_forum = $this->config['r2t_dest_forum'];
 		}
 		else if ($post_id > 0)
 		{
 			$subject = 'r2t_post_title';
 			$template = 'r2t_post_template';
+
+			// Destination forum
+			global $forum_data;
+			$dest_forum = ($forum_data['r2t_report_forum'] > 0) ? $forum_data['r2t_report_forum'] : $this->config['r2t_dest_forum'];
 		}
 		else
 		{
@@ -141,7 +149,7 @@ class report2topic_core
 		// Set all the post data
 		$poll_data = array();
 		$post_data = array(
-			'forum_id'	=> $this->config['r2t_dest_forum'],    // The forum ID in which the post will be placed. (int)
+			'forum_id'	=> $dest_forum,    // The forum ID in which the post will be placed. (int)
 			'topic_id'	=> 0,    // Post a new topic or in an existing one? Set to 0 to create a new one, if not, specify your topic ID here instead.
 			'icon_id'	=> false,    // The Icon ID in which the post will be displayed with on the viewforum, set to false for icon_id. (int)
 
