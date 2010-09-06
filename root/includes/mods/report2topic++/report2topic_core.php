@@ -40,31 +40,6 @@ class report2topic_core
 	static private $instance = null;
 
 	/**
-	 * @var String Report post template
-	 * @todo Replace by a fully configurable template
-	 */
-//Array
-//(
-//    [post_subject] => Welcome to phpBB3
-//    [post_id] => 1
-//    [user_id] => 2
-//    [report_id] => 9
-//    [report_closed] => 0
-//    [report_time] => 1283461074
-//    [report_text] =>
-//    [reason_title] => warez
-//    [reason_description] => The post contains links to illegal or pirated software.
-//    [username] => Erik Frèrejean
-//    [username_clean] => erik frèrejean
-//    [user_colour] => AA0000
-//)
-	private $post_template = 'A new report has been made by %1$s, the report details are:.
-
-[b]The report[/b]: <a href="%2$s">%3$s</a>
-[b]Report time[/b]: %4$s
-[b]Report reason[/b]: %5$s';
-
-	/**
 	 * Construct the main class
 	 */
 	private function __construct()
@@ -114,26 +89,36 @@ class report2topic_core
 	 */
 	public function submit_report_post($pm_id = 0, $post_id = 0)
 	{
-		// Fetch the report data
-		$report_data = array();
+		// Some mode specific data
 		if ($pm_id > 0)
 		{
-			$report_data = $this->get_pm_report($pm_id);
+			$subject = 'r2t_pm_title';
 			$template = 'r2t_pm_template';
 
 			// Can't use {REPORT_POST} here!
 			unset($this->user->lang['r2t_tokens']['REPORT_POST']);
+
+			// Destination forum
+			// @todo customisable
+			$dest_forum = $this->config['r2t_pm_dest_forum'];
 		}
 		else if ($post_id > 0)
 		{
-			$report_data = $this->get_post_report($post_id);
+			$subject = 'r2t_post_title';
 			$template = 'r2t_post_template';
+
+			// Destination forum
+			global $forum_data;
+			$dest_forum = ($forum_data['r2t_report_forum'] > 0) ? $forum_data['r2t_report_forum'] : $this->config['r2t_dest_forum'];
 		}
 		else
 		{
 			// No report, shouldn't happen but hey ;)
 			return;
 		}
+
+		// Fetch the report data
+		$report_data = $this->get_report_data($pm_id, $post_id);
 
 		// Prepare token replacements
 		$replacing = $tokens = $tokens_replacement = array();
@@ -152,7 +137,7 @@ class report2topic_core
 		}
 
 		// Prepare the post
-		$subject = ($post_id > 0) ? 'Post report: ' . censor_text($report_data['post_subject']) : 'PM report: ' . censor_text($report_data['message_subject']);
+		$subject = censor_text(str_replace($tokens, $replacing, $this->config[$subject]));
 		$post = str_replace($tokens, $replacing, $this->config[$template]);
 
 		// Load the message parser
@@ -164,7 +149,7 @@ class report2topic_core
 		// Set all the post data
 		$poll_data = array();
 		$post_data = array(
-			'forum_id'	=> $this->config['r2t_dest_forum'],    // The forum ID in which the post will be placed. (int)
+			'forum_id'	=> $dest_forum,    // The forum ID in which the post will be placed. (int)
 			'topic_id'	=> 0,    // Post a new topic or in an existing one? Set to 0 to create a new one, if not, specify your topic ID here instead.
 			'icon_id'	=> false,    // The Icon ID in which the post will be displayed with on the viewforum, set to false for icon_id. (int)
 
@@ -205,42 +190,50 @@ class report2topic_core
 	}
 
 	/**
-	 * Get the report data of this reported PM
-	 * @param	Integer	$pm_id ID of the reported PM
-	 * @return	Array	The report data
-	 */
-	private function get_pm_report($pm_id) {
-		$sql = 'SELECT pm.message_subject, r.post_id, r.user_id, r.report_id, r.report_closed, r.report_time, r.report_text, rr.reason_title, rr.reason_description, u.username, u.username_clean, u.user_colour
-			FROM (' . PRIVMSGS_TABLE . ' pm, ' . REPORTS_TABLE . ' r, ' . REPORTS_REASONS_TABLE . ' rr, ' . USERS_TABLE . " u)
-			WHERE r.pm_id = {$pm_id}
-				AND rr.reason_id = r.reason_id
-				AND r.user_id = u.user_id
-				AND r.post_id = 0
-				AND pm.msg_id = r.pm_id
-			ORDER BY report_closed ASC";
-		$result = $this->db->sql_query_limit($sql, 1);
-		$report = $this->db->sql_fetchrow($result);
-		$this->db->sql_freeresult($result);
-
-		return $report;
-	}
-
-	/**
-	 * Get the report data of this reported post
+	 * Get the report data of the reported post or PM
+	 * @param	Integer	$pm_id		ID of the reported PM
 	 * @param	Integer	$post_id	ID of the reported post
 	 * @return	Array	The report data
 	 */
-	private function get_post_report($post_id) {
-		$sql = 'SELECT p.post_subject, r.post_id, r.user_id, r.report_id, r.report_closed, r.report_time, r.report_text, rr.reason_title, rr.reason_description, u.username, u.username_clean, u.user_colour
-			FROM (' . POSTS_TABLE . ' p, ' . REPORTS_TABLE . ' r, ' . REPORTS_REASONS_TABLE . ' rr, ' . USERS_TABLE . " u)
-			WHERE r.post_id = {$post_id}
+	private function get_report_data($pm_id = 0, $post_id = 0)
+	{
+		// The global query
+		$sql_ary = array(
+			'SELECT'	=> 'r.user_id, r.report_id, r.report_closed, r.report_time, r.report_text, rr.reason_title, rr.reason_description, u.username, u.username_clean, u.user_colour',
+			'FROM'		=> array(
+				REPORTS_TABLE			=> 'r',
+				REPORTS_REASONS_TABLE	=> 'rr',
+				USERS_TABLE				=> 'u',
+			),
+			'ORDER_BY'	=> 'report_closed ASC',
+		);
+
+		// Type specific
+		if ($post_id > 0)
+		{
+			$sql_ary['SELECT']	.= ', p.post_subject, r.post_id';
+			$sql_ary['FROM']	+= array(POSTS_TABLE => 'p');
+			$sql_ary['WHERE']	= "r.post_id = {$post_id}
 				AND rr.reason_id = r.reason_id
 				AND r.user_id = u.user_id
 				AND r.pm_id = 0
-				AND p.post_id = r.post_id
-			ORDER BY report_closed ASC";
-		$result = $this->db->sql_query_limit($sql, 1);
-		$report = $this->db->sql_fetchrow($result);
+				AND p.post_id = r.post_id";
+		}
+		else
+		{
+			$sql_ary['SELECT']	.= ', pm.message_subject, r.pm_id';
+			$sql_ary['FROM']	+= array(PRIVMSGS_TABLE => 'pm');
+			$sql_ary['WHERE']	= "r.pm_id = {$pm_id}
+				AND rr.reason_id = r.reason_id
+				AND r.user_id = u.user_id
+				AND r.post_id = 0
+				AND pm.msg_id = r.pm_id";
+		}
+
+		// Build and run the query
+		$sql	= $this->db->sql_build_query('SELECT', $sql_ary);
+		$result	= $this->db->sql_query($sql);
+		$report	= $this->db->sql_fetchrow($result);
 		$this->db->sql_freeresult($result);
 
 		return $report;
@@ -261,35 +254,41 @@ class report2topic_core
 		}
 
 		// Build the data
-		$reporter		= get_username_string('full', $report['user_id'], $report['username'], $report['user_colour']);
+		$reporter		= get_username_string('username', $report['user_id'], $report['username'], $report['user_colour']);
+		$reporter_full	= get_username_string('full', $report['user_id'], $report['username'], $report['user_colour']);
 		$report_reason	= censor_text($report['reason_title']);
 		$report_text	= censor_text($report['report_text']);
 		$report_time	= $this->user->format_date($report['report_time']);
-		$title			= ($report['post_id'] > 0) ? censor_text($report['post_subject']) : censor_text($report['message_subject']),
+		$title			= (isset($report['post_id'])) ? censor_text($report['post_subject']) : censor_text($report['message_subject']);
 
 		$report_link_params = array(
-			'i'		=> ($report['post_id'] > 0) ? 'reports' : 'pm_reports',
-			'mode'	=> ($report['post_id'] > 0) ? 'report_details' : 'pm_report_details',
+			'i'		=> (isset($report['post_id']))  ? 'reports' : 'pm_reports',
+			'mode'	=> (isset($report['post_id']))  ? 'report_details' : 'pm_report_details',
 			'r'		=> $report['report_id'],
 		);
 		$report_link = append_sid(generate_board_url() . '/mcp.' . PHP_EXT, $report_link_params);
 
-		$report_post_link_params = array(
-			'p'	=> $report['post_id'],
-			'#'	=> 'p' . $report['post_id'],
-		);
-		$report_post_link = append_sid(generate_board_url() . '/viewtopic.' . PHP_EXT, $report_post_link_params);
-
 		// Fill the array
 		$tokens = array(
 			'REPORTER'		=> $reporter,
+			'REPORTER_FULL'	=> $reporter_full,
 			'REPORT_LINK'	=> $report_link,
-			'REPORT_POST'	=> $report_post_link,
 			'REPORT_REASON'	=> $report_reason,
 			'REPORT_TEXT'	=> $report_text,
 			'REPORT_TIME'	=> $report_time,
 			'TITLE'			=> $title,
 		);
+
+		if (isset($report['post_id']))
+		{
+				$report_post_link_params = array(
+				'p'	=> $report['post_id'],
+				'#'	=> 'p' . $report['post_id'],
+			);
+			$report_post_link = append_sid(generate_board_url() . '/viewtopic.' . PHP_EXT, $report_post_link_params);
+
+			$tokens[] = array('REPORT_POST'	=> $report_post_link);
+		}
 	}
 
 

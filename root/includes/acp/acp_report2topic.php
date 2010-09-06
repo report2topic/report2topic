@@ -77,36 +77,55 @@ class acp_report2topic
 		if ($this->submit)
 		{
 			// Get teh vars
-			$df		= request_var('report2topic_post_forum', 0);
-			$pmt	= utf8_normalize_nfc(request_var('report2topic_pm_template', '', true));
-			$pt		= utf8_normalize_nfc(request_var('report2topic_post_template', '', true));
+			$dest_forum		= request_var('report2topic_post_forum', 0);
+			$pm_dest_forum	= request_var('report2topic_pm_forum', 0);
+			$pm_title		= utf8_normalize_nfc(request_var('report2topic_pm_title', '', true));
+			$post_title		= utf8_normalize_nfc(request_var('report2topic_post_title', '', true));
+			$pm_template	= utf8_normalize_nfc(request_var('report2topic_pm_template', '', true));
+			$post_template	= utf8_normalize_nfc(request_var('report2topic_post_template', '', true));
 
-			// Get the dest forum
+			// Validate the forum IDs
+			// If valid save the settings.
 			$sql = 'SELECT forum_id
 				FROM ' . FORUMS_TABLE . '
-				WHERE forum_id = ' . (int) $df;
+				WHERE ' . $this->core->db->sql_in_set('forum_id', array($dest_forum, $pm_dest_forum));
 			$result	= $this->core->db->sql_query($sql);
-			$fid	= $this->core->db->sql_fetchfield('forum_id', false, $result);
+			while ($forum = $this->core->db->sql_fetchrow($result))
+			{
+				if ($forum['forum_id'] == $dest_forum)
+				{
+					set_config('r2t_dest_forum', $dest_forum);
+				}
+
+				if ($forum['forum_id'] == $pm_dest_forum)
+				{
+					set_config('r2t_pm_dest_forum', $pm_dest_forum);
+				}
+			}
 			$this->core->db->sql_freeresult($result);
 
-			// The forum exists save
-			if ($fid !== false)
-			{
-				set_config('r2t_dest_forum', $fid);
-			}
+			// Save topic title
+			set_config('r2t_pm_title', $pm_title);
+			set_config('r2t_post_title', $post_title);
 
 			// Save the templates
-			set_config('r2t_pm_template', $pmt);
-			set_config('r2t_post_template', $pt);
+			set_config('r2t_pm_template', $pm_template);
+			set_config('r2t_post_template', $post_template);
 
 			trigger_error($this->core->user->lang('ACP_REPORT2TOPIC_CONFIG_SUCCESS') . adm_back_link($this->u_action));
 		}
 
+		$dest_forum_id		= (isset($this->core->config['r2t_dest_forum'])) ? $this->core->config['r2t_dest_forum'] : 0;
+		$pm_dest_forum_id	= (isset($this->core->config['r2t_pm_dest_forum'])) ? $this->core->config['r2t_pm_dest_forum'] : 0;
+
 		// Output the page
 		$this->core->template->assign_vars(array(
-			'S_DEST_FORUM'		=> (isset($this->core->config['r2t_dest_forum'])) ? $this->core->config['r2t_dest_forum'] : '',
+			'S_DEST_OPTIONS'	=> make_forum_select($dest_forum_id, false, true, true),
+			'S_PM_DEST_OPTIONS'	=> make_forum_select($pm_dest_forum_id, false, true, true),
 			'S_PM_TEMPLATE'		=> (isset($this->core->config['r2t_pm_template'])) ? $this->core->config['r2t_pm_template'] : '',
+			'S_PM_TITLE'		=> (isset($this->core->config['r2t_pm_title'])) ? $this->core->config['r2t_pm_title'] : '',
 			'S_POST_TEMPLATE'	=> (isset($this->core->config['r2t_post_template'])) ? $this->core->config['r2t_post_template'] : '',
+			'S_POST_TITLE'		=> (isset($this->core->config['r2t_post_title'])) ? $this->core->config['r2t_post_title'] : '',
 
 			'U_ACTION'	=> $this->u_action,
 		));

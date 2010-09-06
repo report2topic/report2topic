@@ -37,6 +37,66 @@ abstract class hook_report2topic
 	{
 		$phpbb_hook->register('phpbb_user_session_handler', 'hook_report2topic::setup');
 		$phpbb_hook->register(array('template', 'display'), 'hook_report2topic::overrule_report');
+
+		// Some adm hooks
+		if (defined('ADMIN_START'))
+		{
+			$phpbb_hook->register(array('template', 'display'), 'hook_report2topic::add_forum_options');
+
+			$phpbb_hook->add_hook(array('acp_forums', 'update_forum_data'));
+			$phpbb_hook->register(array('acp_forums', 'update_forum_data'), 'hook_report2topic::update_forum_data');
+		}
+	}
+
+	/**
+	 * Modify the manage forums pages in the ACP by adding some
+	 * additional template stuff.
+	 * @param	phpbb_hook	$phpbb_hook	The phpBB hook object
+	 * @return	void
+	 */
+	static public function add_forum_options(phpbb_hook $phpbb_hook)
+	{
+		global $mode, $module_id, $update;
+		$fid = request_var('f', 0);
+
+		if ($module_id != 'forums' || $mode != 'manage' || $update)
+		{
+			return;
+		}
+
+		// The forum that is being editted is the current default
+		// report destination forum. Don't show this!
+		if ($fid == self::$r2t_core->config['r2t_dest_forum'])
+		{
+			self::$r2t_core->template->assign_var('S_CAN_SET_R2T_DEST_FORUM', false);
+			return;
+		}
+
+		// Need to grep some data from the db here
+		$default_name	= '';
+		$selected_id	= 0;
+		$sql = 'SELECT forum_id, forum_name, r2t_report_forum
+			FROM ' . FORUMS_TABLE . '
+			WHERE ' . self::$r2t_core->db->sql_in_set('forum_id', array($fid, self::$r2t_core->config['r2t_dest_forum']));
+		$result	= self::$r2t_core->db->sql_query($sql);
+		while ($forum = self::$r2t_core->db->sql_fetchrow($result))
+		{
+			if ($forum['forum_id'] == $fid)
+			{
+				$selected_id = $forum['r2t_report_forum'];
+			}
+			else
+			{
+				$default_name = $forum['forum_name'];
+			}
+		}
+
+		// Assign our additional vars
+		self::$r2t_core->template->assign_vars(array(
+			'S_CAN_SET_R2T_DEST_FORUM'		=> true,
+			'S_R2T_DEFAULT_DEST'			=> $default_name,	// Default forum as set in the ACP page
+			'S_R2T_DEFAULT_DEST_OPTIONS'	=> make_forum_select($selected_id, false, true, true),
+		));
 	}
 
 	/**
@@ -61,6 +121,23 @@ abstract class hook_report2topic
 		{
 			self::$r2t_core->user->add_lang('mods/report2topic++/report2topic_acp');
 		}
+	}
+
+	/**
+	 * Adjust the forum data array so that the report2topic destination forum
+	 * is saved correctly
+	 * @param	phpbb_hook	$phpbb_hook	The phpBB hook object
+	 * @param	array		$forum_data	The forum data array passed from the manage method
+	 * @return	array		The altered forum data array
+	 */
+	static public function update_forum_data(phpbb_hook $phpbb_hook, $forum_data)
+	{
+		$dest_forum = request_var('report2topic_dest_forum', 0);
+
+		// Merge in the $forum_data array
+		$forum_data['r2t_report_forum'] = $dest_forum;
+
+		return $forum_data;
 	}
 
 	/**
