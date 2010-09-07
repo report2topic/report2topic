@@ -45,6 +45,8 @@ $lang = array_merge($lang, array(
 	'ACP_REPORT2TOPIC_CONFIG_SUCCESS'	=> 'The main configuration has been updated successfully!',
 	'ACP_REPORT2TOPIC_PM_CONFIG'		=> 'PM report configuration',
 
+	'FORUM_NOT_EXISTS'				=> 'The requested forum (%1$s) doesn\'t exist',
+
 	'R2T_DEST_FORUM'				=> 'Default destination forum',
 	'R2T_DEST_FORUM_EXPLAIN'		=> 'Select the that will be used as <strong>default</strong> destination forum for the report posts. You however can select on a forum basis a different report forum.',
 	'R2T_PM_DEST_FORUM'				=> 'PM report destination forum',
