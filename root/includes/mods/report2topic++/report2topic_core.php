@@ -100,7 +100,7 @@ class report2topic_core
 		$fid	= $this->db->sql_fetchfield('forum_id', false, $result);
 		$this->db->sql_freeresult($result);
 
-		if (!$fid)
+		if ($dest_forum > 0 && !$fid)
 		{
 			$error[] = $this->user->lang('FORUM_NOT_EXISTS', $dest_forum);
 			return;
