@@ -39,8 +39,8 @@ if (empty($lang) || !is_array($lang))
 //
 
 $lang = array_merge($lang, array(
-	'ACP_REPORT2TOPIC'					=> 'report2topic',
-	'ACP_REPORT2TOPIC_CONFIG'			=> 'report2topic configuration',
+	'ACP_REPORT2TOPIC'					=> 'report2topic++',
+	'ACP_REPORT2TOPIC_CONFIG'			=> 'report2topic++ configuration',
 	'ACP_REPORT2TOPIC_CONFIG_EXPLAIN'	=> 'The main report2topic++ configuration.',
 	'ACP_REPORT2TOPIC_CONFIG_SUCCESS'	=> 'The main configuration has been updated successfully!',
 	'ACP_REPORT2TOPIC_PM_CONFIG'		=> 'PM report configuration',
