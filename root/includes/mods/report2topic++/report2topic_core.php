@@ -82,6 +82,21 @@ class report2topic_core
 	}
 
 	/**
+	 * Adjust the forum data array so that the report2topic destination forum
+	 * is saved correctly
+	 * @param	array	$forum_data	The forum data array passed from the manage method
+	 * @param	array	$error		Array containing any encountered error messages
+	 * @return	void
+	 */
+	public function acp_alter_forum_data(&$forum_data, &$error)
+	{
+		$dest_forum = request_var('report2topic_dest_forum', 0);
+
+		// Merge in the $forum_data array
+		$forum_data['r2t_report_forum'] = $dest_forum;
+	}
+
+	/**
 	 * A new report is created, create the report topic
 	 * @param	Integer	$pm_id		ID of the reported PM
 	 * @param	Integer	$post_id	ID of the reported post
