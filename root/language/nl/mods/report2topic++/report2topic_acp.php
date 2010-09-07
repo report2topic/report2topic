@@ -45,6 +45,8 @@ $lang = array_merge($lang, array(
 	'ACP_REPORT2TOPIC_CONFIG_SUCCESS'	=> 'De globale configuratie is successvol aangepast!',
 	'ACP_REPORT2TOPIC_PM_CONFIG'		=> 'PM melding configuratie.',
 
+	'FORUM_NOT_EXISTS'	=> 'Het verzochte forum (%1$s) bestaat niet!',
+
 	'PARSE_SIG'	=> 'Laat onderschrift zien',
 
 	'R2T_DEST_FORUM'				=> 'Standaard forum',
