@@ -16,25 +16,18 @@ index 9f9216a..52813a5 100644
  
  	<div id="forum_cat_options">
 diff --git a/phpBB/includes/acp/acp_forums.php b/phpBB/includes/acp/acp_forums.php
-index 4d9b9f0..d5bac93 100644
+index 4d9b9f0..4b4137c 100644
 --- a/phpBB/includes/acp/acp_forums.php
 +++ b/phpBB/includes/acp/acp_forums.php
-@@ -873,6 +873,18 @@ class acp_forums
- 	{
- 		global $db, $user, $cache, $phpbb_root_path;
+@@ -875,6 +875,11 @@ class acp_forums
  
-+		//-- BEGIN report2topic++
-+		//-- Add:
-+		global $phpbb_hook;
-+		if (!empty($phpbb_hook) && $phpbb_hook->call_hook(array(__CLASS__, __FUNCTION__), $forum_data))
-+		{
-+			if ($phpbb_hook->hook_return(array(__CLASS__, __FUNCTION__)))
-+			{
-+				$forum_data = $phpbb_hook->hook_return_result(array(__CLASS__, __FUNCTION__));
-+			}
-+		}
-+		//-- END report2topic++
+                $errors = array();
+ 
++               //-- BEGIN report2topic++
++               //-- Add:
++               report2topic_core::getInstance()->acp_alter_forum_data($forum_data, $error);
++               //-- END report2topic++
 +
- 		$errors = array();
- 
- 		if (!$forum_data['forum_name'])
+                if (!$forum_data['forum_name'])
+                {
+                        $errors[] = $user->lang['FORUM_NAME_EMPTY'];
