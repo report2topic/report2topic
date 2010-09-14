@@ -39,5 +39,14 @@ if (empty($lang) || !is_array($lang))
 //
 
 $lang = array_merge($lang, array(
-
+	'r2t_tokens'	=> array(
+		'REPORTER'		=> 'Gebruikers naam van de melder.',
+		'REPORTER_FULL'	=> 'Link naar het profiel van de melder',
+		'REPORT_LINK'	=> 'Link naar de meldings pagina in het MCP.',
+		'REPORT_POST'	=> 'Link naar de gemelde post. <em>Niet beschikbaar voor PM meldingen!</em>',
+		'REPORT_REASON'	=> 'Opgegeven reden van de melding.',
+		'REPORT_TEXT'	=> 'Omschrijving van de melding zoals bescheven bij de melder.',
+		'REPORT_TIME'	=> 'Tijd van de melding.',
+		'TITLE'			=> 'Onderwerp van de gemelde post of PM.',
+	),
 ));
