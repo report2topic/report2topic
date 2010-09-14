@@ -42,9 +42,6 @@ abstract class hook_report2topic
 		if (defined('ADMIN_START'))
 		{
 			$phpbb_hook->register(array('template', 'display'), 'hook_report2topic::add_forum_options');
-
-			$phpbb_hook->add_hook(array('acp_forums', 'update_forum_data'));
-			$phpbb_hook->register(array('acp_forums', 'update_forum_data'), 'hook_report2topic::update_forum_data');
 		}
 	}
 
@@ -121,23 +118,6 @@ abstract class hook_report2topic
 		{
 			self::$r2t_core->user->add_lang('mods/report2topic++/report2topic_acp');
 		}
-	}
-
-	/**
-	 * Adjust the forum data array so that the report2topic destination forum
-	 * is saved correctly
-	 * @param	phpbb_hook	$phpbb_hook	The phpBB hook object
-	 * @param	array		$forum_data	The forum data array passed from the manage method
-	 * @return	array		The altered forum data array
-	 */
-	static public function update_forum_data(phpbb_hook $phpbb_hook, $forum_data)
-	{
-		$dest_forum = request_var('report2topic_dest_forum', 0);
-
-		// Merge in the $forum_data array
-		$forum_data['r2t_report_forum'] = $dest_forum;
-
-		return $forum_data;
 	}
 
 	/**

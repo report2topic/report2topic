@@ -40,6 +40,42 @@ class report2topic_core
 	static private $instance = null;
 
 	/**
+	 * @var array The post data array
+	 */
+	private $post_data = array(
+		'forum_id'	=> 0,
+		'topic_id'	=> 0,
+		'icon_id'	=> false,
+
+		// Defining Post Options
+		'enable_bbcode'		=> false,
+		'enable_smilies'	=> false,
+		'enable_urls'       => false,
+		'enable_sig'        => false,
+
+		// Message Body
+		'message'		=> '',
+		'message_md5'	=> '',
+
+		// Values from generate_text_for_storage()
+		'bbcode_bitfield'	=> '',
+		'bbcode_uid'		=> '',
+
+		// Other Options
+		'post_edit_locked'	=> 1,
+		'topic_title'		=> '',
+
+		// Email Notification Settings
+		'notify_set'	=> false,
+		'notify'		=> false,
+		'post_time'		=> 0,
+		'forum_name'	=> '',
+
+		// Indexing
+		'enable_indexing' => true,
+	);
+
+	/**
 	 * Construct the main class
 	 */
 	private function __construct()
@@ -82,6 +118,35 @@ class report2topic_core
 	}
 
 	/**
+	 * Adjust the forum data array so that the report2topic destination forum
+	 * is saved correctly
+	 * @param	array	$forum_data	The forum data array passed from the manage method
+	 * @param	array	$error		Array containing any encountered error messages
+	 * @return	void
+	 */
+	public function acp_alter_forum_data(&$forum_data, &$error)
+	{
+		$dest_forum = request_var('report2topic_dest_forum', 0);
+
+		// Make sure that this forum exists
+		$sql = 'SELECT forum_id
+			FROM ' . FORUMS_TABLE . '
+			WHERE forum_id = ' . $dest_forum;
+		$result	= $this->db->sql_query($sql);
+		$fid	= $this->db->sql_fetchfield('forum_id', false, $result);
+		$this->db->sql_freeresult($result);
+
+		if ($dest_forum > 0 && !$fid)
+		{
+			$error[] = $this->user->lang('FORUM_NOT_EXISTS', $dest_forum);
+			return;
+		}
+
+		// Merge in the $forum_data array
+		$forum_data['r2t_report_forum'] = $dest_forum;
+	}
+
+	/**
 	 * A new report is created, create the report topic
 	 * @param	Integer	$pm_id		ID of the reported PM
 	 * @param	Integer	$post_id	ID of the reported post
@@ -99,8 +164,13 @@ class report2topic_core
 			unset($this->user->lang['r2t_tokens']['REPORT_POST']);
 
 			// Destination forum
-			// @todo customisable
-			$dest_forum = $this->config['r2t_pm_dest_forum'];
+			$this->post_data['forum_id'] = $this->config['r2t_pm_dest_forum'];
+
+			// Post options
+			$this->post_data['enable_bbcode']	= ($this->config['r2t_pm_template_bbcode']) ? true : false;
+			$this->post_data['enable_smilies']	= ($this->config['r2t_pm_template_smilies']) ? true : false;
+			$this->post_data['enable_urls']		= ($this->config['r2t_pm_template_urls']) ? true : false;
+			$this->post_data['enable_sig']		= ($this->config['r2t_pm_template_sig']) ? true : false;
 		}
 		else if ($post_id > 0)
 		{
@@ -109,7 +179,13 @@ class report2topic_core
 
 			// Destination forum
 			global $forum_data;
-			$dest_forum = ($forum_data['r2t_report_forum'] > 0) ? $forum_data['r2t_report_forum'] : $this->config['r2t_dest_forum'];
+			$this->post_data['forum_id'] = ($forum_data['r2t_report_forum'] > 0) ? $forum_data['r2t_report_forum'] : $this->config['r2t_dest_forum'];
+
+			// Post options
+			$this->post_data['enable_bbcode']	= ($this->config['r2t_post_template_bbcode']) ? true : false;
+			$this->post_data['enable_smilies']	= ($this->config['r2t_post_template_smilies']) ? true : false;
+			$this->post_data['enable_urls']		= ($this->config['r2t_post_template_urls']) ? true : false;
+			$this->post_data['enable_sig']		= ($this->config['r2t_post_template_sig']) ? true : false;
 		}
 		else
 		{
@@ -137,56 +213,30 @@ class report2topic_core
 		}
 
 		// Prepare the post
-		$subject = censor_text(str_replace($tokens, $replacing, $this->config[$subject]));
 		$post = str_replace($tokens, $replacing, $this->config[$template]);
 
 		// Load the message parser
 		$report_parser = new parse_message($post);
 
 		// Parse the post
-		$report_parser->parse(true, true, true);
+		$report_parser->parse($this->post_data['enable_bbcode'], $this->post_data['enable_urls'], $this->post_data['enable_smilies']);
 
-		// Set all the post data
+		// Set the message
+		$this->post_data['bbcode_bitfield']	= $report_parser->bbcode_bitfield;
+        $this->post_data['bbcode_uid']		= $report_parser->bbcode_uid;
+		$this->post_data['message']			= $report_parser->message;
+		$this->post_data['message_md5']		= md5($report_parser->message);
+		$this->post_data['topic_title'] 	= censor_text(str_replace($tokens, $replacing, $this->config[$subject]));
+
+		// Only here to not break "submit_post()"
 		$poll_data = array();
-		$post_data = array(
-			'forum_id'	=> $dest_forum,    // The forum ID in which the post will be placed. (int)
-			'topic_id'	=> 0,    // Post a new topic or in an existing one? Set to 0 to create a new one, if not, specify your topic ID here instead.
-			'icon_id'	=> false,    // The Icon ID in which the post will be displayed with on the viewforum, set to false for icon_id. (int)
-
-			// Defining Post Options
-			'enable_bbcode'		=> true, // Enable BBcode in this post. (bool)
-			'enable_smilies'	=> true, // Enabe smilies in this post. (bool)
-			'enable_urls'       => true, // Enable self-parsing URL links in this post. (bool)
-			'enable_sig'        => true, // Enable the signature of the poster to be displayed in the post. (bool)
-
-			// Message Body
-			'message'		=> $report_parser->message,     // Your text you wish to have submitted. It should pass through generate_text_for_storage() before this. (string)
-			'message_md5'	=> md5($report_parser->message),// The md5 hash of your message
-
-			// Values from generate_text_for_storage()
-			'bbcode_bitfield'	=> $report_parser->bbcode_bitfield,    // Value created from the generate_text_for_storage() function.
-			'bbcode_uid'		=> $report_parser->bbcode_uid,     // Value created from the generate_text_for_storage() function.
-
-			// Other Options
-			'post_edit_locked'	=> 1,        // Disallow post editing? 1 = Yes, 0 = No
-			'topic_title'		=> $subject, // Subject/Title of the topic. (string)
-
-			// Email Notification Settings
-			'notify_set'	=> false,        // (bool)
-			'notify'		=> false,        // (bool)
-			'post_time'		=> 0,        // Set a specific time, use 0 to let submit_post() take care of getting the proper time (int)
-			'forum_name'	=> '',       // For identifying the name of the forum in a notification email. (string)
-
-			// Indexing
-			'enable_indexing' => true,     // Allow indexing the post? (bool)
-		);
 
 		// And finally submit
 		if (!function_exists('submit_post'))
 		{
 			require PHPBB_ROOT_PATH . 'includes/functions_posting.' . PHP_EXT;
 		}
-		submit_post('post', $post_data['topic_title'], '', POST_NORMAL, $poll_data, $post_data);
+		submit_post('post', $this->post_data['topic_title'], '', POST_NORMAL, $poll_data, $this->post_data);
 	}
 
 	/**
@@ -287,7 +337,7 @@ class report2topic_core
 			);
 			$report_post_link = append_sid(generate_board_url() . '/viewtopic.' . PHP_EXT, $report_post_link_params);
 
-			$tokens[] = array('REPORT_POST'	=> $report_post_link);
+			$tokens['REPORT_POST'] = $report_post_link;
 		}
 	}
 

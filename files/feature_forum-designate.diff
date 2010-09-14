@@ -6,35 +6,23 @@ index 9f9216a..52813a5 100644
  			<dd><select id="forum_perm_from" name="forum_perm_from"><option value="0">{L_NO_PERMISSIONS}</option>{S_FORUM_OPTIONS}</select></dd>
  		</dl>
  	<!-- ENDIF -->
-+	<!-- IF S_CAN_SET_R2T_DEST_FORUM --><!-- report2topic++ -->
-+	<dl>
-+		<dt><label for="report2topic_dest_forum">{L_R2T_SELECT_DEST_FORUM}:</label><br /><span>{L_R2T_SELECT_DEST_FORUM_EXPLAIN}</span></dt>
-+		<dd><select id="report2topic_dest_forum" name="report2topic_dest_forum"><option value="0">{S_R2T_DEFAULT_DEST}</option><option disabled="disabled">----------</option>{S_R2T_DEFAULT_DEST_OPTIONS}</select></dd>
-+	</dl>
-+	<!-- /report2topic++ --><!-- ENDIF -->
++	<!-- INCLUDE mods/report2topic++/report2topic++.html -->
  	</fieldset>
  
  	<div id="forum_cat_options">
 diff --git a/phpBB/includes/acp/acp_forums.php b/phpBB/includes/acp/acp_forums.php
-index 4d9b9f0..d5bac93 100644
+index 4d9b9f0..4b4137c 100644
 --- a/phpBB/includes/acp/acp_forums.php
 +++ b/phpBB/includes/acp/acp_forums.php
-@@ -873,6 +873,18 @@ class acp_forums
- 	{
- 		global $db, $user, $cache, $phpbb_root_path;
+@@ -875,6 +875,11 @@ class acp_forums
  
-+		//-- BEGIN report2topic++
-+		//-- Add:
-+		global $phpbb_hook;
-+		if (!empty($phpbb_hook) && $phpbb_hook->call_hook(array(__CLASS__, __FUNCTION__), $forum_data))
-+		{
-+			if ($phpbb_hook->hook_return(array(__CLASS__, __FUNCTION__)))
-+			{
-+				$forum_data = $phpbb_hook->hook_return_result(array(__CLASS__, __FUNCTION__));
-+			}
-+		}
-+		//-- END report2topic++
+                $errors = array();
+ 
++               //-- BEGIN report2topic++
++               //-- Add:
++               report2topic_core::getInstance()->acp_alter_forum_data($forum_data, $error);
++               //-- END report2topic++
 +
- 		$errors = array();
- 
- 		if (!$forum_data['forum_name'])
+                if (!$forum_data['forum_name'])
+                {
+                        $errors[] = $user->lang['FORUM_NAME_EMPTY'];
