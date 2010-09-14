@@ -12,8 +12,11 @@
 //-->
 <!-- ENDIF -->
 
-<!-- INCLUDE overall_header.html -->
+<!-- IF ON_R2T_ACP_PAGE -->
+    <!-- INCLUDE overall_header.html -->
+<!-- ENDIF -->
 
+<!-- IF ON_R2T_ACP_PAGE == '_config' -->
 <a name="maincontent"></a>
 <h1>{L_ACP_REPORT2TOPIC_CONFIG}</h1>
 <p>{L_ACP_REPORT2TOPIC_CONFIG_EXPLAIN}</p>
@@ -90,5 +93,15 @@
 	</tbody>
 	</table>
 </form>
+<!-- ELSE -->
+    <!-- IF S_CAN_SET_R2T_DEST_FORUM -->
+	<dl>
+		<dt><label for="report2topic_dest_forum">{L_R2T_SELECT_DEST_FORUM}:</label><br /><span>{L_R2T_SELECT_DEST_FORUM_EXPLAIN}</span></dt>
+		<dd><select id="report2topic_dest_forum" name="report2topic_dest_forum"><option value="0">{S_R2T_DEFAULT_DEST}</option><option disabled="disabled">----------</option>{S_R2T_DEFAULT_DEST_OPTIONS}</select></dd>
+	</dl>
+	<!-- ENDIF -->
+<!-- ENDIF -->
 
-<!-- INCLUDE overall_footer.html -->
+<!-- IF ON_R2T_ACP_PAGE -->
+    <!-- INCLUDE overall_footer.html -->
+<!-- ENDIF -->

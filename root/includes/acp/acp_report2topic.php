@@ -57,6 +57,9 @@ class acp_report2topic
 		}
 
 		add_form_key($this->form_key);
+
+		// Inform the template on which acp page the user is
+		$this->core->template->assign_var('ON_R2T_ACP_PAGE', '_' . $mode);
 	}
 
 	/**
@@ -69,7 +72,7 @@ class acp_report2topic
 	private function _config()
 	{
 		// Setup the page
-		$this->tpl_name		= 'mods/report2topic++/report2topic++_config';
+		$this->tpl_name		= 'mods/report2topic++/report2topic++';
 		$this->page_title	= 'ACP_REPORT2TOPIC_CONFIG';
 		$this->form_key		= 'report2topic++_config';
 

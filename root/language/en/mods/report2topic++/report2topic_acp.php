@@ -45,6 +45,8 @@ $lang = array_merge($lang, array(
 	'ACP_REPORT2TOPIC_CONFIG_SUCCESS'	=> 'The main configuration has been updated successfully!',
 	'ACP_REPORT2TOPIC_PM_CONFIG'		=> 'PM report configuration',
 
+	'FORUM_NOT_EXISTS'				=> 'The requested forum (%1$s) doesn\'t exist',
+
 	'PARSE_SIG'	=> 'Display signature',
 
 	'R2T_DEST_FORUM'				=> 'Default destination forum',

@@ -128,6 +128,20 @@ class report2topic_core
 	{
 		$dest_forum = request_var('report2topic_dest_forum', 0);
 
+		// Make sure that this forum exists
+		$sql = 'SELECT forum_id
+			FROM ' . FORUMS_TABLE . '
+			WHERE forum_id = ' . $dest_forum;
+		$result	= $this->db->sql_query($sql);
+		$fid	= $this->db->sql_fetchfield('forum_id', false, $result);
+		$this->db->sql_freeresult($result);
+
+		if ($dest_forum > 0 && !$fid)
+		{
+			$error[] = $this->user->lang('FORUM_NOT_EXISTS', $dest_forum);
+			return;
+		}
+
 		// Merge in the $forum_data array
 		$forum_data['r2t_report_forum'] = $dest_forum;
 	}
